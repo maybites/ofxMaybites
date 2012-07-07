@@ -60,4 +60,91 @@ void ofmMesh::loadobj(string modelpath){
     
 	glmDelete(m);
     
+    updatePolyFaces();
+}
+
+void ofmMesh::updatePolyFaces(){
+    int n = getNumTriFaces();
+    vector<int> faces;
+    polyFaces.clear();
+    faces.resize(getNumTriFaces());
+    for (int i = 0; i < n; i++) {
+        faces[i] = i;
+    }
+    // sorting the faces accroding to their normals
+    for (int i = 0; i < n-1;){ // i++){
+        ofVec3f norm = getTriFaceNormal(faces[i]);
+        ofmPolyFace newFace;
+        newFace.addFace(getTriFaceVIndex(faces[i], 0), 
+                        getTriFaceVIndex(faces[i], 1), 
+                        getTriFaceVIndex(faces[i], 2));
+        //cout << "face normal : " << i << " " << norm.x << " - " << norm.y << " - " << norm.z << endl;         
+        //int nextindex = i+1;
+        for (int j = i+1; j < n; j++){
+            ofVec3f comp = getTriFaceNormal(faces[j]);
+            //check if both faces are looking in the same direction
+            if(ofmIsSimilar(comp,norm,3)){
+                /*
+                 ofVec3f face = getFace(faces[i]);
+                 cout << "face : " << i << " " << (int)face.x << " - " << (int)face.y << " - " << (int)face.z << endl; 	
+                 face = getFace(faces[j]);
+                 cout << " -> match : " << j << " " << (int)face.x << " - " << (int)face.y << " - " << (int)face.z << endl; 	
+                 */
+                int equalface = faces[j];
+                faces[j] = faces[++i];
+                faces[i] = equalface;
+                newFace.addFace(getTriFaceVIndex(faces[i], 0), 
+                                getTriFaceVIndex(faces[i], 1), 
+                                getTriFaceVIndex(faces[i], 2));
+                //                faces[j] = faces[nextindex];
+                //                faces[nextindex] = equalface;
+                //nextindex++;
+            }
+        }
+        polyFaces.push_back(newFace);
+        i++;
+    }
+    
+    /* for debugging only:
+    for (int i = 0; i < n; i++) {
+        cout << "got face with vertice: "   << getTriFaceVIndex(faces[i], 0) << " - " 
+        << getTriFaceVIndex(faces[i], 1) << " - " 
+        << getTriFaceVIndex(faces[i], 2) << endl; 	
+    }
+    
+    n = polyFaces.size();
+    for (int i = 0; i < n; i++) {
+        ofmPolyFace face = polyFaces[i];
+        cout << "got polyface with : " << face.getNumLines() << " lines" << endl; 	
+        for(int j = 0; j < face.getNumLines(); j++){
+            cout << "     line: " << j << " | " << face.getLine(j).p1 << " - " << face.getLine(j).p2 << endl; 	
+        }
+    }
+    */
+}
+
+int ofmMesh::getNumPolyFaces(){
+    return polyFaces.size();
+}
+
+ofmPolyFace ofmMesh::getPolyFace(int index){
+    return polyFaces[index];
+}
+
+int ofmMesh::getNumTriFaces(){
+    return getNumIndices()/3;
+}
+
+int ofmMesh::getTriFaceVIndex(int faceNum, int vertex){  
+    return getIndex(faceNum*3+vertex);
+}
+
+ofVec3f ofmMesh::getTriFaceNormal(int faceNum){  
+    ofVec3f vertice1 = getVertex(getTriFaceVIndex(faceNum, 0));
+    ofVec3f vertice2 = getVertex(getTriFaceVIndex(faceNum, 1));
+    ofVec3f vertice3 = getVertex(getTriFaceVIndex(faceNum, 2));
+    ofVec3f edge1 = vertice1 - vertice2;
+    ofVec3f edge2 = vertice2 - vertice3;
+    ofVec3f norm = edge1.cross(edge2);
+    return norm.getNormalized();
 }

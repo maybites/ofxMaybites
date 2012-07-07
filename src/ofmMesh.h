@@ -9,6 +9,7 @@
 #include "ofMain.h"
 #include "ofmMath.h"
 #include "glm.h"
+#include "ofmPolyFace.h"
 
 #ifndef of_elSantoGrial_ofmMesh_h
 #define of_elSantoGrial_ofmMesh_h
@@ -18,5 +19,16 @@ public:
     ofmMesh();
     
     void loadobj(string modelpath);
+    
+    int         getNumPolyFaces();
+    ofmPolyFace getPolyFace(int index);
+
+private:
+    int     getTriFaceVIndex(int faceNum, int vertex);
+    ofVec3f getTriFaceNormal(int faceNum);  
+    int     getNumTriFaces();
+    void    updatePolyFaces();
+
+    vector<ofmPolyFace> polyFaces;
 };
 #endif
