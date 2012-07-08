@@ -1,6 +1,5 @@
 //
 //  ofmMesh.cpp
-//  of_elSantoGrial
 //
 //  Created by Martin Froehlich on 06.07.12.
 //  Copyright (c) 2012 maybites.ch. All rights reserved.
@@ -9,6 +8,10 @@
 #include <iostream>
 #include "ofmMesh.h"
 #include "ofMesh.h"
+
+#define FACE_POINT1 0
+#define FACE_POINT2 1
+#define FACE_POINT3 2
 
 ofmMesh::ofmMesh() :ofMesh(){
 }
@@ -31,7 +34,7 @@ void ofmMesh::loadobj(string modelpath){
 	{
         GLfloat *v;
         v = &m->vertices[i*3];
-		addVertex(ofVec3f(ofmRound(v[0],5), ofmRound(v[1],5), ofmRound(v[2],5)));
+		addVertex(ofVec3f(ofmRound(v[FACE_POINT1],5), ofmRound(v[FACE_POINT2],5), ofmRound(v[FACE_POINT3],5)));
     }
     if (m->numnormals > 0)
     {
@@ -39,7 +42,7 @@ void ofmMesh::loadobj(string modelpath){
         {
             GLfloat *n;
             n = &m->normals[i*3];
-            addNormal(ofVec3f(n[0], n[1], n[2]));
+            addNormal(ofVec3f(n[FACE_POINT1], n[FACE_POINT2], n[FACE_POINT3]));
         }
     }
     if (m->numtexcoords > 0)
@@ -48,14 +51,14 @@ void ofmMesh::loadobj(string modelpath){
         {
             GLfloat *t;
             t = &m->texcoords[i*3];
-            addTexCoord(ofVec3f(t[0], t[1], t[2]));
+            addTexCoord(ofVec3f(t[FACE_POINT1], t[FACE_POINT2], t[FACE_POINT3]));
         }
     }
 	for (int i = 0; i < m->numtriangles; i++)
 	{
         GLMtriangle &t = m->triangles[i];
         
-        addTriangle(t.vindices[0]-1, t.vindices[1]-1, t.vindices[2]-1);
+        addTriangle(t.vindices[FACE_POINT1]-1, t.vindices[FACE_POINT2]-1, t.vindices[FACE_POINT3]-1);
     }
     
 	glmDelete(m);
@@ -75,9 +78,9 @@ void ofmMesh::updatePolyFaces(){
     for (int i = 0; i < n-1;){ // i++){
         ofVec3f norm = getTriFaceNormal(faces[i]);
         ofmPolyFace newFace;
-        newFace.addFace(getTriFaceVIndex(faces[i], 0), 
-                        getTriFaceVIndex(faces[i], 1), 
-                        getTriFaceVIndex(faces[i], 2));
+        newFace.addFace(getTriFaceVIndex(faces[i], FACE_POINT1), 
+                        getTriFaceVIndex(faces[i], FACE_POINT2), 
+                        getTriFaceVIndex(faces[i], FACE_POINT3));
         //cout << "face normal : " << i << " " << norm.x << " - " << norm.y << " - " << norm.z << endl;         
         //int nextindex = i+1;
         for (int j = i+1; j < n; j++){
@@ -93,9 +96,9 @@ void ofmMesh::updatePolyFaces(){
                 int equalface = faces[j];
                 faces[j] = faces[++i];
                 faces[i] = equalface;
-                newFace.addFace(getTriFaceVIndex(faces[i], 0), 
-                                getTriFaceVIndex(faces[i], 1), 
-                                getTriFaceVIndex(faces[i], 2));
+                newFace.addFace(getTriFaceVIndex(faces[i], FACE_POINT1), 
+                                getTriFaceVIndex(faces[i], FACE_POINT2), 
+                                getTriFaceVIndex(faces[i], FACE_POINT3));
                 //                faces[j] = faces[nextindex];
                 //                faces[nextindex] = equalface;
                 //nextindex++;
@@ -140,9 +143,9 @@ int ofmMesh::getTriFaceVIndex(int faceNum, int vertex){
 }
 
 ofVec3f ofmMesh::getTriFaceNormal(int faceNum){  
-    ofVec3f vertice1 = getVertex(getTriFaceVIndex(faceNum, 0));
-    ofVec3f vertice2 = getVertex(getTriFaceVIndex(faceNum, 1));
-    ofVec3f vertice3 = getVertex(getTriFaceVIndex(faceNum, 2));
+    ofVec3f vertice1 = getVertex(getTriFaceVIndex(faceNum, FACE_POINT1));
+    ofVec3f vertice2 = getVertex(getTriFaceVIndex(faceNum, FACE_POINT2));
+    ofVec3f vertice3 = getVertex(getTriFaceVIndex(faceNum, FACE_POINT3));
     ofVec3f edge1 = vertice1 - vertice2;
     ofVec3f edge2 = vertice2 - vertice3;
     ofVec3f norm = edge1.cross(edge2);
